@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class GreetingsStreamApp {
     public static void main(String[] args) {
         Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "greetings-stream-app");
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "greetings-app");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
