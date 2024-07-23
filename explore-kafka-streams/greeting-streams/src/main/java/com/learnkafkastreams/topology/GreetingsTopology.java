@@ -1,12 +1,15 @@
 package com.learnkafkastreams.topology;
 
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
+
+import java.security.KeyPair;
 
 public class GreetingsTopology {
     public static String SOURCE_TOPIC = "greetings";
@@ -20,7 +23,7 @@ public class GreetingsTopology {
         greetingsStream.print(Printed.<String,String>toSysOut().withLabel("greetingsStream"));
 
         KStream<String, String> modifiedStream = greetingsStream.filter((key, value) -> value.length() > 5)
-                                                                .mapValues(((readOnlyKey, value) -> value.toUpperCase() ));
+                                                                  .map((k, v) -> KeyValue.pair(k.toUpperCase(), v.toUpperCase()));
 
         modifiedStream.to(DESTINATION_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
 
