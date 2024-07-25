@@ -9,7 +9,8 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
 
-import java.security.KeyPair;
+import java.util.Arrays;
+import java.util.List;
 
 public class GreetingsTopology {
     public static String SOURCE_TOPIC = "greetings";
@@ -22,14 +23,22 @@ public class GreetingsTopology {
 
         greetingsStream.print(Printed.<String,String>toSysOut().withLabel("greetingsStream"));
 
-        KStream<String, String> modifiedStream = greetingsStream.filter((key, value) -> value.length() > 5)
-                                                                  .map((k, v) -> KeyValue.pair(k.toUpperCase(), v.toUpperCase()));
+        KStream<String, String> modifiedStream = greetingsStream.filterNot(GreetingsTopology::valueIsNotAllowed)
+                                                                .flatMap((k,v)-> {
+                                                                    return Arrays.stream(v.split(""))
+                                                                                 .map(s ->KeyValue.pair(k.toUpperCase(), s.toUpperCase()))
+                                                                                 .toList();
+                                                                });
 
         modifiedStream.to(DESTINATION_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
 
         modifiedStream.print(Printed.<String,String>toSysOut().withLabel("modifiedGreetingsStream"));
 
         return streamsBuilder.build();
+    }
+
+    private static boolean valueIsNotAllowed(String key, String value) {
+        return List.of("hola", "chau", "si", "no").contains(value);
     }
 
     public static Topology buildTopologyRoWay() {
